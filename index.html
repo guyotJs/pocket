@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wiki Markup Editor</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      background: #f5f5f5;
+      margin: 2rem auto;
+      max-width: 960px;
+      padding: 1rem;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      font-family: monospace;
+    }
+    .preview {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      background: #f9f9f9;
+      overflow: hidden;
+    }
+    code {
+      background: #eee;
+      padding: 0.1em 0.3em;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    h1, h2, h3 {
+      margin: 0.5rem 0;
+    }
+    h1 + hr, h2 + hr {
+      border: none;
+      height: 1px;
+      background-color: #ddd;
+      margin: 0.5rem 0 1rem;
+    }
+    .image-float-left, .image-float-right {
+      max-width: 220px;
+      background: #f2f2f2;
+      border: 1px solid #ccc;
+      padding: 4px;
+      margin-bottom: 1rem;
+    }
+    .image-float-left {
+      float: left;
+      margin-right: 1rem;
+    }
+    .image-float-right {
+      float: right;
+      margin-left: 1rem;
+    }
+    .image-caption {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 4px;
+    }
+    .clearfix::after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+    button.download-btn {
+      align-self: flex-start;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      background: white;
+      cursor: pointer;
+    }
+    a{
+        color:rgb(34, 165, 236);
+        text-decoration: none;
+    }
+    a:hover{
+        text-decoration: underline;
+    }
+    .missing-link{
+        color:rgb(220, 64, 64);
+    }
+    .grun{
+        color:rgb(33, 190, 67);
+    }
+  </style>
+</head>
+<body>
+  <input type="text" id="title" placeholder="Put Your Title Here!"/>
+  <textarea id="editor">
+=Wiki Markup=
+
+[[https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/S._Hripsime_Church_Southwest.jpg/2560px-S._Hripsime_Church_Southwest.jpg|St. Hripsime Church|right]]
+
+'''Wiki Markup''' is a [[#|markup language]] designed specifically for creating [[#|wikipedia articles]]. It offers several a more simple syntax for creating [[#|HTML]] webpages. It features no direct similarities with the [[#|Markdown]] syntax.
+
+===The Syntax===
+
+Wiki Markup offers several different markers for bold, italic, links, images, etc.
+
+`=​Header=​`
+`​=​=H2=​=`
+`​=​=​=H3=​=​=​`
+`'​'​'bold'​'​'`
+`'​'italic'​'`
+`[​[File://Image.png|Caption|Float]​]`
+`[​[Https://www.w3.org|Link text]​]​`
+`# For an OL`
+`* For an UL`
+
+===Custom Syntax===
+
+This is an extended version of the $$Wiki Markup$$ language including:
+
+`$​$green$​​$`
+`!​!red!​!`
+
+    
+</textarea>
+  <button class="download-btn" onclick="downloadHTML()">Download HTML</button>
+  <div class="preview" id="preview"></div>
+
+  <script>
+    function parseWikiMarkup(markup) {
+      const lines = markup.split(/\r?\n/);
+      let html = '<div class="clearfix">';
+      let inUL = false;
+      let inOL = false;
+
+      for (let line of lines) {
+        if (/^===(.*?)===/.test(line)) {
+          html += `<h3>${line.match(/^===(.*?)===/)[1]}</h3>`;
+        } else if (/^==(.*?)==/.test(line)) {
+          html += `<h2>${line.match(/^==(.*?)==/)[1]}</h2><hr>`;
+        } else if (/^=(.*?)=/.test(line)) {
+          html += `<h1>${line.match(/^=(.*?)=/)[1]}</h1><hr>`;
+        } else if (/^\*\s?(.*)/.test(line)) {
+          if (!inUL) {
+            html += '<ul>';
+            inUL = true;
+          }
+          html += `<li>${line.match(/^\*\s?(.*)/)[1]}</li>`;
+        } else if (/^#\s?(.*)/.test(line)) {
+          if (!inOL) {
+            html += '<ol>';
+            inOL = true;
+          }
+          html += `<li>${line.match(/^#\s?(.*)/)[1]}</li>`;
+        } else {
+          if (inUL) {
+            html += '</ul>';
+            inUL = false;
+          }
+          if (inOL) {
+            html += '</ol>';
+            inOL = false;
+          }
+
+          const imageMatch = line.match(/^\[\[(.*?)\|(.*?)\|(.*?)\]\]$/);
+          if (imageMatch) {
+            const [_, src, caption, float] = imageMatch;
+            const floatClass = float.toLowerCase() === 'left' ? 'image-float-left' : float.toLowerCase() === 'right' ? 'image-float-right' : '';
+            html += `
+              <div class="${floatClass}">
+                <img src="${src}" alt="${caption}" style="max-width: 100%; display: block;">
+                <div class="image-caption">${caption}</div>
+              </div>
+            `;
+            continue;
+          }
+
+          html += `<p>${line
+            .replace(/'''(.*?)'''/g, '<strong>$1</strong>')
+            .replace(/''(.*?)''/g, '<em>$1</em>')
+            .replace(/!!(.*?)!!/g, '<span class="missing-link">$1</span>')
+            .replace(/\$\$(.*?)\$\$/g, '<span class="grun">$1</span>')
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            .replace(/\[\[(.*?)\|(.*?)\]\]/g, '<a href="$1">$2</a>')}</p>`;
+        }
+      }
+
+      if (inUL) html += '</ul>';
+      if (inOL) html += '</ol>';
+
+      html += '</div>'; // close clearfix
+      return html;
+    }
+
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+
+    function updatePreview() {
+      preview.innerHTML = parseWikiMarkup(editor.value);
+    }
+
+    window.downloadHTML = function () {
+    let name = document.getElementById("title").value;
+  const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${name}</title>
+<style>${document.querySelector('style').innerHTML}</style>
+</head>
+<body>
+<div class="preview">${parseWikiMarkup(editor.value)}</div>
+</body>
+</html>`;
+
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${name}.html`;
+  a.click();
+};
+
+    editor.addEventListener('input', updatePreview);
+    updatePreview();
+  </script>
+</body>
+</html>
