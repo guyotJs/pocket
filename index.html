@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pocket Wiki</title>
-<link rel="shortcut icon" href="https://guyotjs.github.io/duckclear2.png" type="image/x-icon">
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pocket Wiki</title>
+  <link rel="shortcut icon" href="https://guyotjs.github.io/duckclear2.png" type="image/x-icon">
+  <style>
     body {
       font-family: sans-serif;
       display: flex;
@@ -20,6 +20,7 @@
       width: 100%;
       height: 300px;
       font-family: monospace;
+        display:none;
     }
     sup { vertical-align: top; font-size: 0.6em; }
     p{
@@ -96,11 +97,122 @@
   </style>
 </head>
 <body>
-<div class="preview"><div class="clearfix"><h1>Pocket Wiki</h1><hr>
-              <div class="image-float-right">
-                <img src="https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcR1Y8bVEIoPYwIchW8A6sAhCN6gMJKzw2Ccr1R9qSAHN-QD1hbBCNSfz-kyq0ftaz2QZoM5f4MVnavqW9eZ7Q7-IPIWDQlh9ifgPUvJ7dA" alt="A Church in the German exclave of Büsingen am Hochrhein" style="max-width: 100%; display: block;">
-                <div class="image-caption">A Church in the German exclave of Büsingen am Hochrhein</div>
+  <input type="text" id="title" placeholder="Put Your Title Here!"/>
+  <textarea id="editor">
+=Pocket Wiki=
+[[https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcR1Y8bVEIoPYwIchW8A6sAhCN6gMJKzw2Ccr1R9qSAHN-QD1hbBCNSfz-kyq0ftaz2QZoM5f4MVnavqW9eZ7Q7-IPIWDQlh9ifgPUvJ7dA|A Church in the German exclave of Büsingen am Hochrhein|right]]
+'''Pocket Wiki''' is a simple article creator project made by [[#|Weston]]. It follows a similar syntax to the Wikitext/Wiki Markup((https://en.wikipedia.org/wiki/Help:Wikitext|1)). When you create an article it is as simple as pressing the [[#|Download]] button and uploading it wherever you would like to publish it. Pocket Wiki does '''not''' require any accreditation for usage, nor does it claim '''any''' ownership of the articles written on it.
+Click [[https://guyotjs.github.io/pocket/syntax.html|Here]] for the Pocket Wiki syntax guide.
+
+Click [[https://guyotjs.github.io/pocket/editor.html|Here]] for the Pocket Wiki editor.
+
+===Take a Look at Some Articles===
+[[https://guyotjs.github.io/pocket/The_Adaptation_of_the_LDS_Faith.html|The Adaptation of the LDS Faith]]
+[[https://guyotjs.github.io/pocket/In_Defence_of_Theological_Accuracy.html|In Defence of Theological Accuracy]]
+
+Pocket Wiki is a '''Guyot Project''' under the MIT licence.
+  </textarea>
+  <button class="download-btn" onclick="downloadHTML()">Download HTML</button>
+  <div class="preview" id="preview"></div>
+
+  <script>
+    function parseWikiMarkup(markup) {
+      const lines = markup.split(/\r?\n/);
+      let html = '<div class="clearfix">';
+      let inUL = false;
+      let inOL = false;
+
+      for (let line of lines) {
+        if (/^===(.*?)===/.test(line)) {
+          html += `<h3>${line.match(/^===(.*?)===/)[1]}</h3>`;
+        } else if (/^==(.*?)==/.test(line)) {
+          html += `<h2>${line.match(/^==(.*?)==/)[1]}</h2><hr>`;
+        } else if (/^=(.*?)=/.test(line)) {
+          html += `<h1>${line.match(/^=(.*?)=/)[1]}</h1><hr>`;
+        } else if (/^\*\s?(.*)/.test(line)) {
+          if (!inUL) {
+            html += '<ul>';
+            inUL = true;
+          }
+          html += `<li>${line.match(/^\*\s?(.*)/)[1]}</li>`;
+        } else if (/^#\s?(.*)/.test(line)) {
+          if (!inOL) {
+            html += '<ol>';
+            inOL = true;
+          }
+          html += `<li>${line.match(/^#\s?(.*)/)[1]}</li>`;
+        } else {
+          if (inUL) {
+            html += '</ul>';
+            inUL = false;
+          }
+          if (inOL) {
+            html += '</ol>';
+            inOL = false;
+          }
+
+          const imageMatch = line.match(/^\[\[(.*?)\|(.*?)\|(.*?)\]\]$/);
+          if (imageMatch) {
+            const [_, src, caption, float] = imageMatch;
+            const floatClass = float.toLowerCase() === 'left' ? 'image-float-left' : float.toLowerCase() === 'right' ? 'image-float-right' : '';
+            html += `
+              <div class="${floatClass}">
+                <img src="${src}" alt="${caption}" style="max-width: 100%; display: block;">
+                <div class="image-caption">${caption}</div>
               </div>
-            <p><strong>Pocket Wiki</strong> is a simple article creator project made by <a href="#">Weston</a>. It follows a similar syntax to the Wikitext/Wiki Markup<sup> <a href="https://en.wikipedia.org/wiki/Help:Wikitext">[1]</a> </sup>. When you create an article it is as simple as pressing the <a href="#">Download</a> button and uploading it wherever you would like to publish it. Pocket Wiki does <strong>not</strong> require any accreditation for usage, nor does it claim <strong>any</strong> ownership of the articles written on it.</p><p></p><p>Click <a href="./syntax.html">Here</a> for the Pocket Wiki syntax guide.</p><p>Click <a href="./editor.html">Here</a> for the Pocket Wiki editor.</p><p><code>Take a look at the <strong>Featured Article</strong> <strong><a href="./The_Adaptation_of_the_LDS_Faith.html">Here</a></strong>!</code> </p><p></p><p>Pocket Wiki is a <strong>Guyot Project</strong> under the MIT licence.</p></div></div>
+            `;
+            continue;
+          }
+
+          html += `<p>${line
+            .replace(/'''(.*?)'''/g, '<strong>$1</strong>')
+            .replace(/''(.*?)''/g, '<em>$1</em>')
+            .replace(/!!(.*?)!!/g, '<span class="missing-link">$1</span>')
+            .replace(/\$\$(.*?)\$\$/g, '<span class="grun">$1</span>')
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            .replace(/\[\[(.*?)\|(.*?)\]\]/g, '<a href="$1">$2</a>')
+            .replace(/\(\((.*?)\|(.*?)\)\)/g, '<sup> <a href="$1">[$2]</a> </sup>')}</p>`;
+        }
+      }
+
+      if (inUL) html += '</ul>';
+      if (inOL) html += '</ol>';
+
+      html += '</div>'; // close clearfix
+      return html;
+    }
+
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+
+    function updatePreview() {
+      preview.innerHTML = parseWikiMarkup(editor.value);
+    }
+
+    window.downloadHTML = function () {
+    let name = document.getElementById("title").value;
+  const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${name}</title>
+<style>${document.querySelector('style').innerHTML}</style>
+</head>
+<body>
+<div class="preview">${parseWikiMarkup(editor.value)}</div>
+</body>
+</html>`;
+
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${name}.html`;
+  a.click();
+};
+
+    editor.addEventListener('input', updatePreview);
+    updatePreview();
+  </script>
 </body>
 </html>
