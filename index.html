@@ -21,6 +21,10 @@
       height: 300px;
       font-family: monospace;
     }
+    sup { vertical-align: top; font-size: 0.6em; }
+    p{
+        line-height: 1.5;
+    }
     .preview {
       border: 1px solid #ccc;
       padding: 1rem;
@@ -182,7 +186,7 @@ This is an extended version of the $$Wiki Markup$$ language including:
             .replace(/\$\$(.*?)\$\$/g, '<span class="grun">$1</span>')
             .replace(/`(.*?)`/g, '<code>$1</code>')
             .replace(/\[\[(.*?)\|(.*?)\]\]/g, '<a href="$1">$2</a>')
-            .replace(/\(\((.*?)\|(.*?)\)\)/g, '<a href="$1"><sup>[$2]</sup></a>')}</p>`;
+            .replace(/\(\((.*?)\|(.*?)\)\)/g, '<sup> <a href="$1">[$2]</a> </sup>')}</p>`;
         }
       }
 
