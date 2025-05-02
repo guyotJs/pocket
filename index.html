@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wiki Markup Editor</title>
+  <title>Pocket Wiki</title>
+  <link rel="shortcut icon" href="https://guyotjs.github.io/duckclear2.png" type="image/x-icon">
   <style>
     body {
       font-family: sans-serif;
@@ -93,11 +94,11 @@
 <body>
   <input type="text" id="title" placeholder="Put Your Title Here!"/>
   <textarea id="editor">
-=Wiki Markup=
+=Pocket Wiki=
 
 [[https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/S._Hripsime_Church_Southwest.jpg/2560px-S._Hripsime_Church_Southwest.jpg|St. Hripsime Church|right]]
-
-'''Wiki Markup''' is a [[#|markup language]] designed specifically for creating [[#|wikipedia articles]]. It offers several a more simple syntax for creating [[#|HTML]] webpages. It features no direct similarities with the [[#|Markdown]] syntax.
+`''Create, Download, Publish''`
+'''Pocket Wiki''' is a [[#|markup language]] designed specifically for creating [[#|wikipedia style]] articles. It offers several a more simple syntax for creating [[#|HTML]] webpages. It features no direct similarities with the [[#|Markdown]] syntax. ((#|1))
 
 ===The Syntax===
 
@@ -119,7 +120,7 @@ This is an extended version of the $$Wiki Markup$$ language including:
 
 `$​$green$​​$`
 `!​!red!​!`
-
+`(​(Footnote Link|Number)​)`
     
 </textarea>
   <button class="download-btn" onclick="downloadHTML()">Download HTML</button>
@@ -180,7 +181,8 @@ This is an extended version of the $$Wiki Markup$$ language including:
             .replace(/!!(.*?)!!/g, '<span class="missing-link">$1</span>')
             .replace(/\$\$(.*?)\$\$/g, '<span class="grun">$1</span>')
             .replace(/`(.*?)`/g, '<code>$1</code>')
-            .replace(/\[\[(.*?)\|(.*?)\]\]/g, '<a href="$1">$2</a>')}</p>`;
+            .replace(/\[\[(.*?)\|(.*?)\]\]/g, '<a href="$1">$2</a>')
+            .replace(/\(\((.*?)\|(.*?)\)\)/g, '<a href="$1"><sup>[$2]</sup></a>')}</p>`;
         }
       }
 
